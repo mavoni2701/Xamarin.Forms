@@ -8,6 +8,7 @@ using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Xamarin.Forms.Internals;
 using AView = Android.Views.View;
 
 namespace Xamarin.Forms.Platform.Android.FastRenderers
@@ -36,9 +37,11 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 
 		public LabelRenderer(Context context) : base(context)
 		{
+			Profile.FrameBegin();
 			_labelTextColorDefault = TextColors;
 			_visualElementRenderer = new VisualElementRenderer(this);
 			BackgroundManager.Init(this);
+			Profile.FrameEnd();
 		}
 
 		[Obsolete("This constructor is obsolete as of version 2.5. Please use LabelRenderer(Context) instead.")]

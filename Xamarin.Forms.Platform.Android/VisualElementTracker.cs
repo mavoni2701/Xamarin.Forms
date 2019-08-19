@@ -197,6 +197,16 @@ namespace Xamarin.Forms.Platform.Android
 			UpdateClipToBounds();
 		}
 
+		void MaybeRequestLayout()
+		{
+			var isInLayout = false;
+			if ((int)Forms.SdkInt >= 18)
+				isInLayout = _renderer.View.IsInLayout;
+
+			if (!isInLayout && !_renderer.View.IsLayoutRequested)
+				_renderer.View.RequestLayout();
+		}
+
 		void RendererOnElementChanged(object sender, VisualElementChangedEventArgs args)
 		{
 			SetElement(args.OldElement, args.NewElement);
