@@ -157,6 +157,7 @@
     <Compile Include="IPickerRenderer.cs" />
     <Compile Include="PickerManager.cs" />
     <Compile Include="EntryAccessibilityDelegate.cs" />
+    <Compile Include="Renderers\BorderDrawable.cs" />
     <Compile Include="Renderers\CircularProgress.cs" />
     <Compile Include="Renderers\PickerEditText.cs" />
     <Compile Include="Renderers\FontImageSourceHandler.cs" />
@@ -185,11 +186,9 @@
     <Compile Include="PowerSaveModeBroadcastReceiver.cs" />
     <Compile Include="Renderers\AHorizontalScrollView.cs" />
     <Compile Include="Renderers\AndroidGIFImageParser.cs" />
-    <Compile Include="Renderers\ButtonDrawable.cs" />
     <Compile Include="Renderers\BottomNavigationViewUtils.cs" />
     <Compile Include="Renderers\AlignmentExtensions.cs" />
     <Compile Include="Renderers\ColorChangeRevealDrawable.cs" />
-    <Compile Include="Renderers\BorderDrawable.cs" />
     <Compile Include="Renderers\ButtonRenderer.cs" />
     <Compile Include="CollectionView\CollectionViewRenderer.cs" />
     <Compile Include="Renderers\ConditionalFocusLayout.cs" />

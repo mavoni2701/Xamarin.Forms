@@ -33,8 +33,14 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			if (renderer is ILayoutChanges layoutChanges)
 				layoutChanges.LayoutChange -= OnLayoutChange;
 
+			if (renderer is IImageRendererController imageRenderer)
+				imageRenderer.SetFormsAnimationDrawable(null);
+
 			if (renderer.View is ImageView imageView)
+			{
 				imageView.SetImageDrawable(null);
+				imageView.Reset();
+			}
 		}
 
 		async static void OnElementChanged(object sender, VisualElementChangedEventArgs e)
@@ -60,8 +66,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 			var ImageElementManager = (IImageElement)renderer.Element;
 			var imageController = (IImageController)renderer.Element;
 
-			if (e.PropertyName == Image.SourceProperty.PropertyName ||
-				e.PropertyName == Button.ImageSourceProperty.PropertyName)
+			if (e.IsOneOf(Image.SourceProperty, Button.ImageSourceProperty))
 			{
 				try
 				{
@@ -77,9 +82,36 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 						imageController?.SetIsLoading(false);
 				}
 			}
-			else if (e.PropertyName == Image.AspectProperty.PropertyName)
+			else if (e.Is(Image.AspectProperty))
 			{
 				UpdateAspect(renderer as IImageRendererController, (ImageView)renderer.View, (IImageElement)renderer.Element);
+			}
+			else if (e.Is(Image.IsAnimationPlayingProperty))
+				await StartStopAnimation(renderer, imageController, ImageElementManager).ConfigureAwait(false);
+		}
+
+		async static Task StartStopAnimation(
+			IVisualElementRenderer renderer,
+			IImageController imageController,
+			IImageElement imageElement)
+		{
+			IImageRendererController imageRendererController = renderer as IImageRendererController;
+			var view = renderer.View as ImageView;
+			if (imageRendererController.IsDisposed || imageElement == null || view == null || view.IsDisposed())
+				return;
+
+			if (imageElement.IsLoading)
+				return;
+
+			if (!(view.Drawable is IFormsAnimationDrawable) && imageElement.IsAnimationPlaying)
+				await TryUpdateBitmap(imageRendererController, view, imageElement);
+
+			if (view.Drawable is IFormsAnimationDrawable animation)
+			{
+				if (imageElement.IsAnimationPlaying && !animation.IsRunning)
+					animation.Start();
+				else if (!imageElement.IsAnimationPlaying && animation.IsRunning)
+					animation.Stop();
 			}
 		}
 
@@ -91,7 +123,29 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				return;
 			}
 
+			if (Control.Drawable is IFormsAnimationDrawable currentAnimation)
+			{
+				rendererController.SetFormsAnimationDrawable(currentAnimation);
+				currentAnimation.Stop();
+			}
+			else
+			{
+				rendererController.SetFormsAnimationDrawable(null);
+			}
+
 			await Control.UpdateBitmap(newImage, previous).ConfigureAwait(false);
+
+			if (Control.Drawable is IFormsAnimationDrawable updatedAnimation)
+			{
+				if (newImage.IsAnimationAutoPlay)
+					updatedAnimation.Start();
+			}
+		}
+
+		internal static void OnAnimationStopped(IImageController imageElement, FormsAnimationDrawableStateEventArgs e)
+		{			
+			if (imageElement != null && e.Finished)
+				imageElement.OnAnimationFinishedPlaying();
 		}
 
 		static void UpdateAspect(IImageRendererController rendererController, ImageView Control, IImageElement newImage, IImageElement previous = null)
